@@ -1,0 +1,304 @@
+##day2
+
+# case ... end 語句
+select concat(cname,' ',case when csex = 'F' then '小姐' when csex = 'M' then '先生' end) as title from students;
+
+# if 語句
+select csex, if(csex='F','小姐','先生') from students;
+select concat(cname,' ', if(csex='F','小姐','先生')) as title from students;
+
+# 依照成績排序
+select cname, cgd ,
+case when cgd >= 90 then 'A'
+when cgd >= 80 then 'B'
+when cgd >= 70 then 'C'
+when cgd >= 60 then 'D'
+else 'E' end as level
+from s1
+order by level, cgd desc;
+
+# group by 分群組
+select csex, count(*) from s1 group by csex;
+
+# group by + having 語句
+select csex, count(*),sum(cgd), avg(cgd), min(cgd), max(cgd) from s1 group by csex having avg(cgd) >= 60;
+
+#
+select city, count(employeeid) as numemployee from employees group by city;
+select city, count(employeeid) as numemployee from employees group by city having numemployee >=2;
+select city, count(employeeid) as numsemployee from employees where title='Sales Representative' group by city having numsemployee >=2 order by numsemployee;
+
+# 找出差異欄位
+select count(distinct city) from employees;
+
+# 
+select productid, sum(quantity) as total from `order details` group by productid having total <200; 
+
+# 
+select productid , avg(unitprice) as avgprice from `order details` group by productid having avgprice > 70 order by avgprice;
+
+# 數字型別 concat後會轉為字串
+select concat('$',' ',unitprice ) from products ;
+
+# 找出員工被僱用時的年紀
+ select lastname , birthdate, hiredate ,year(hiredate)-year(birthdate) hireage from employees;
++-----------+---------------------+---------------------+---------+
+| lastname  | birthdate           | hiredate            | hireage |
++-----------+---------------------+---------------------+---------+
+| Davolio   | 1948-12-08 00:00:00 | 1992-05-01 00:00:00 |      44 |
+| Fuller    | 1952-02-19 00:00:00 | 1992-08-14 00:00:00 |      40 |
+| Leverling | 1963-08-30 00:00:00 | 1992-04-01 00:00:00 |      29 |
+| Peacock   | 1937-09-19 00:00:00 | 1993-05-03 00:00:00 |      56 |
+| Buchanan  | 1955-03-04 00:00:00 | 1993-10-17 00:00:00 |      38 |
+| Suyama    | 1963-07-02 00:00:00 | 1993-10-17 00:00:00 |      30 |
+| King      | 1960-05-29 00:00:00 | 1994-01-02 00:00:00 |      34 |
+| Callahan  | 1958-01-09 00:00:00 | 1994-03-05 00:00:00 |      36 |
+| Dodsworth | 1966-01-27 00:00:00 | 1994-11-15 00:00:00 |      28 |
++-----------+---------------------+---------------------+---------+
+
+# 找出員工被僱用時的年紀
+ select lastname , birthdate, hiredate,datediff(hiredate,birthdate)/365 hireage from employees;
++-----------+---------------------+---------------------+---------+
+| lastname  | birthdate           | hiredate            | hireage |
++-----------+---------------------+---------------------+---------+
+| Davolio   | 1948-12-08 00:00:00 | 1992-05-01 00:00:00 | 43.4247 |
+| Fuller    | 1952-02-19 00:00:00 | 1992-08-14 00:00:00 | 40.5123 |
+| Leverling | 1963-08-30 00:00:00 | 1992-04-01 00:00:00 | 28.6082 |
+| Peacock   | 1937-09-19 00:00:00 | 1993-05-03 00:00:00 | 55.6575 |
+| Buchanan  | 1955-03-04 00:00:00 | 1993-10-17 00:00:00 | 38.6493 |
+| Suyama    | 1963-07-02 00:00:00 | 1993-10-17 00:00:00 | 30.3151 |
+| King      | 1960-05-29 00:00:00 | 1994-01-02 00:00:00 | 33.6192 |
+| Callahan  | 1958-01-09 00:00:00 | 1994-03-05 00:00:00 | 36.1753 |
+| Dodsworth | 1966-01-27 00:00:00 | 1994-11-15 00:00:00 | 28.8192 |
++-----------+---------------------+---------------------+---------+
+9 rows in set (0.001 sec)
+
+# 找出員工被僱用時的年紀
+ select lastname , birthdate, hiredate,floor(datediff(hiredate,birthdate)/365) hireage from employees;
++-----------+---------------------+---------------------+---------+
+| lastname  | birthdate           | hiredate            | hireage |
++-----------+---------------------+---------------------+---------+
+| Davolio   | 1948-12-08 00:00:00 | 1992-05-01 00:00:00 |      43 |
+| Fuller    | 1952-02-19 00:00:00 | 1992-08-14 00:00:00 |      40 |
+| Leverling | 1963-08-30 00:00:00 | 1992-04-01 00:00:00 |      28 |
+| Peacock   | 1937-09-19 00:00:00 | 1993-05-03 00:00:00 |      55 |
+| Buchanan  | 1955-03-04 00:00:00 | 1993-10-17 00:00:00 |      38 |
+| Suyama    | 1963-07-02 00:00:00 | 1993-10-17 00:00:00 |      30 |
+| King      | 1960-05-29 00:00:00 | 1994-01-02 00:00:00 |      33 |
+| Callahan  | 1958-01-09 00:00:00 | 1994-03-05 00:00:00 |      36 |
+| Dodsworth | 1966-01-27 00:00:00 | 1994-11-15 00:00:00 |      28 |
++-----------+---------------------+---------------------+---------+
+9 rows in set (0.001 sec)
+
+# 
+select extract(month from birthdate) from employees ;
++-------------------------------+
+| extract(month from birthdate) |
++-------------------------------+
+|                            12 |
+|                             2 |
+|                             8 |
+|                             9 |
+|                             3 |
+|                             7 |
+|                             5 |
+|                             1 |
+|                             1 |
++-------------------------------+
+9 rows in set (0.000 sec)
+
+# 
+ select extract(month from birthdate) as month  from employees order by month;
++-------+
+| month |
++-------+
+|     1 |
+|     1 |
+|     2 |
+|     3 |
+|     5 |
+|     7 |
+|     8 |
+|     9 |
+|    12 |
++-------+
+
+
+# 找出orderid等於10290的客戶ID
+ select customerid from orders where orderid = 10290;
++------------+
+| customerid |
++------------+
+| COMMI      |
++------------+
+
+# 
+ select companyname  from customers  where customerid = 'commi';
++------------------+
+| companyname      |
++------------------+
+| Comercio Mineiro |
++------------------+
+1 row in set (0.001 sec)
+
+# 上兩句的子查詢
+select companyname  from customers  where customerid = (select  customerid from orders where orderid = 10290);
++------------------+
+| companyname      |
++------------------+
+| Comercio Mineiro |
++------------------+
+1 row in set (0.002 sec)
+
+
+# 找出介於'1997-01-01'  '1997-12-31'的customerid
+ select customerid, orderdate from orders group by customerid having  orderdate between '1997-01-01' and '1997-12-31';
++------------+---------------------+
+| customerid | orderdate           |
++------------+---------------------+
+| ALFKI      | 1997-08-25 00:00:00 |
+| BLAUS      | 1997-04-09 00:00:00 |
+| CACTU      | 1997-04-29 00:00:00 |
+| CONSH      | 1997-02-04 00:00:00 |
+| FOLIG      | 1997-01-08 00:00:00 |
+| FRANR      | 1997-09-17 00:00:00 |
+| FRANS      | 1997-01-22 00:00:00 |
+| GOURL      | 1997-01-23 00:00:00 |
+| GREAL      | 1997-05-06 00:00:00 |
+| LAUGB      | 1997-04-03 00:00:00 |
+| LAZYK      | 1997-03-21 00:00:00 |
+| LETSS      | 1997-06-25 00:00:00 |
+| LINOD      | 1997-01-06 00:00:00 |
+| MAISD      | 1997-05-07 00:00:00 |
+| NORTS      | 1997-04-24 00:00:00 |
+| OCEAN      | 1997-01-09 00:00:00 |
+| RANCH      | 1997-02-17 00:00:00 |
+| SPECD      | 1997-11-12 00:00:00 |
+| THECR      | 1997-08-07 00:00:00 |
+| TRAIH      | 1997-06-19 00:00:00 |
+| WILMK      | 1997-07-30 00:00:00 |
++------------+---------------------+
+21 rows in set (0.002 sec)
+
+
+#
+select companyname from customers where customerid in (select customerid from orders where orderdate between '1997-01-01' and '1997-12-31') ;
+86 rows in set (0.002 sec)
+
+#
+select companyname from suppliers where supplierid in (select supplierid from products where categoryid =8 );
++----------------------------------------+
+| companyname                            |
++----------------------------------------+
+| Tokyo Traders                          |
+| Mayumi's'                              |
+| Pavlova, Ltd.                          |
+| Nord-Ost-Fisch Handelsgesellschaft mbH |
+| Svensk Sjofoda AB                      |
+| New England Seafood Cannery            |
+| Lyngbysild                             |
+| Escargots Nouveaux                     |
++----------------------------------------+
+
+#
+select companyname,contactname from suppliers where supplierid in (select supplierid from products where categoryid in ( select categoryid from categories where categoryname = 'Seafood' ));
++----------------------------------------+----------------+
+| companyname                            | contactname    |
++----------------------------------------+----------------+
+| Tokyo Traders                          | Yoshi Nagase   |
+| Mayumi's     '                         | Mayumi Ohno    |
+| Pavlova, Ltd.                          | Ian Devling    |
+| Nord-Ost-Fisch Handelsgesellschaft mbH | Sven Petersen  |
+| Svensk Sjofoda AB                      | Michael Bjorn  |
+| New England Seafood Cannery            | Robb Merchant  |
+| Lyngbysild                             | Niels Petersen |
+| Escargots Nouveaux                     | Marie Delamare |
++----------------------------------------+----------------+
+
+
+====================================================================================
+
+# join 語句
+select table1.column, table2.column from table1 join table2 on (table1.column=table2.column);
+
+#
+ select employees.employeeid, employees.firstname, employees.lastname, orders.orderid, orders.orderdate from employees join orders on (employees.employeeid = orders.employeeid) order by orders.orderdate limit 20  ;
++------------+-----------+-----------+---------+---------------------+
+| employeeid | firstname | lastname  | orderid | orderdate           |
++------------+-----------+-----------+---------+---------------------+
+|          5 | Steven    | Buchanan  |   10248 | 1996-07-04 00:00:00 |
+|          6 | Michael   | Suyama    |   10249 | 1996-07-05 00:00:00 |
+|          3 | Janet     | Leverling |   10251 | 1996-07-08 00:00:00 |
+|          4 | Margaret  | Peacock   |   10250 | 1996-07-08 00:00:00 |
+|          4 | Margaret  | Peacock   |   10252 | 1996-07-09 00:00:00 |
+|          3 | Janet     | Leverling |   10253 | 1996-07-10 00:00:00 |
+|          5 | Steven    | Buchanan  |   10254 | 1996-07-11 00:00:00 |
+|          9 | Anne      | Dodsworth |   10255 | 1996-07-12 00:00:00 |
+|          3 | Janet     | Leverling |   10256 | 1996-07-15 00:00:00 |
+|          4 | Margaret  | Peacock   |   10257 | 1996-07-16 00:00:00 |
+|          1 | Nancy     | Davolio   |   10258 | 1996-07-17 00:00:00 |
+|          4 | Margaret  | Peacock   |   10259 | 1996-07-18 00:00:00 |
+|          4 | Margaret  | Peacock   |   10261 | 1996-07-19 00:00:00 |
+|          4 | Margaret  | Peacock   |   10260 | 1996-07-19 00:00:00 |
+|          8 | Laura     | Callahan  |   10262 | 1996-07-22 00:00:00 |
+|          9 | Anne      | Dodsworth |   10263 | 1996-07-23 00:00:00 |
+|          6 | Michael   | Suyama    |   10264 | 1996-07-24 00:00:00 |
+|          2 | Andrew    | Fuller    |   10265 | 1996-07-25 00:00:00 |
+|          3 | Janet     | Leverling |   10266 | 1996-07-26 00:00:00 |
+|          4 | Margaret  | Peacock   |   10267 | 1996-07-29 00:00:00 |
++------------+-----------+-----------+---------+---------------------+
+
+
+# 別名格式: from employees e join orders o
+ select e.employeeid, e.firstname, e.lastname, o.orderid, o.orderdate from employees e join orders o on (e.employeeid = o.employeeid) order by o.orderdate limit 20  ;
+
+# 多表join格式
+select tb1.col, tb2.col, tb3.col from tb1 
+join tb2 on (tb1.col = tb2.col)
+join tb3 on (tb2.col = tb3.col)
+where ....
+
+
+#
+select o.orderid , c.companyname, e.firstname, e.lastname from orders o join customers c on (o.customerid = c.customerid) join employees e on (o.employeeid = e.employeeid) where o.shippeddate > o.requireddate and o.orderdate >= '1998-01-01' order by c.companyname;
+
++---------+---------------------------+-----------+-----------+
+| orderid | companyname               | firstname | lastname  |
++---------+---------------------------+-----------+-----------+
+|   10924 | Berglunds snabbkop        | Janet     | Leverling |
+|   10970 | Bolido Comidas preparadas | Anne      | Dodsworth |
+|   10827 | Bon app'                  | Nancy     | Davolio   |
+|   10816 | Great Lakes Food Market   | Margaret  | Peacock   |
+|   10960 | HILARION-Abastos          | Janet     | Leverling |
+|   10927 | La corne d'abondance      | Margaret  | Peacock   |
+|   10828 | Rancho grande             | Anne      | Dodsworth |
+|   10847 | Save-a-lot Markets        | Margaret  | Peacock   |
++---------+---------------------------+-----------+-----------+
+8 rows in set (0.002 sec)
+
+#
+ select c.companyname, count(o.orderid) as numorder from customers c join orders o on (c.customerid = o.customerid) where o.orderdate >= '1997-01-01' group by c.companyname having numorder >= 15 order by numorder desc;
++--------------------+----------+
+| companyname        | numorder |
++--------------------+----------+
+| Save-a-lot Markets |       28 |
+| Ernst Handel       |       24 |
+| QUICK-Stop         |       22 |
+| Folk och fa HB     |       16 |
+| HILARION-Abastos   |       16 |
+| Berglunds snabbkop |       15 |
++--------------------+----------+
+6 rows in set (0.007 sec)
+
+
+# 
+ select c.companyname , o.orderid ,od.unitprice*od.quantity*(1-od.discount) as totalprice  from `order details` od join orders o on (od.orderid = o.orderid) join  customers c on (o.customerid = c.customerid) where od.unitprice*od.quantity*(1-od.discount) > 10000 order by totalprice desc;
++----------------------------+---------+--------------------+
+| companyname                | orderid | totalprice         |
++----------------------------+---------+--------------------+
+| Hanari Carnes              |   10981 |              15810 |
+| QUICK-Stop                 |   10865 | 15019.499988220632 |
+| Simons bistro              |   10417 |              10540 |
+| Rattlesnake Canyon Grocery |   10889 |              10540 |
++----------------------------+---------+--------------------+
+
