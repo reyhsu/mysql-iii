@@ -1,0 +1,97 @@
+## day1
+#查看系統參數
+show variables;
+
+status 修改big-5為 UTF-8 (my.cnf)
+
+SQLite doc
+https://www.sqlite.org/lang_createtable.html
+
+# 建立、刪除table
+create table xxx;
+drop table xxx;
+
+
+1.DDL 資料定義語言 (create, drop
+2.DML 資料操作語言 (insert
+3.DQL 資料查詢語言 (select
+4.DCL 資料控制語言 (GRANT
+
+# 設定語系UT8
+charset=utf8;
+
+# 基礎語句:
+insert into xxx values ('xxx',xx,'xxx');
+select * from xxx;
+delete from xxx where xxx='xxx';
+
+
+# number:
+INT => 2^32 => -21億 ~ +21億
+TINYINT => 2^8 => -128 ~ 127
+SMALLINT => 2^16 => -32768 ~ 32767
+MEDIUMINT => 2^24 => 正負八百多萬
+BIGINT => 
+
+
+# float:
+float => +- 10^38
+double => +- 10^308
+
+# string:
+CHAR => 固定 => ~255
+VARCHAR => 變動 => ~255
+TEXT => 65535
+LONGTEXT => 約42億
+
+# datetime:
+DATETIME => YYYY-MM-DD hh:mm:ss (1000-01-01 9999-12-31)
+Date
+YEAR => 4: 1901 ~ 2155 ,  2: 1970 ~ 2069
+TIME
+
+## 修改table格式
+
+alter table <tablename> add
+alter table <tablename> modify id varchar(1000);
+alter table <tablename> change 
+alter table date drop 333;
+
+# 建立主鍵table,primary key
+create table test1 (id int primary key,cname varchar(10));
+
+# 主鍵自動遞增auto_increment
+create table test2 (id int primary key auto_increment,orderid varchar(10) unique,odate date);
+
+# 複製table
+create table <newtable> select * from students;
+
+# 複製結構
+create table <newtable2> like students;
+
+# 更新資料
+update table1 set <cgd> = rand()*101 where cid =1;
+
+# 排序
+select firstname, lastname , title from employees order by title, lastname desc;
+
+# 不等於<>某項職務 
+select firstname, lastname , title from employees where title <> 'Sales Representative';
+ 
+# 員工資料,區域為NULL
+select region ,firstname from employees where region is null;
+
+# 
+select productname ,unitsinstock, reorderlevel from products where unitsinstock <= reorderlevel;
+
+#
+select orderID , customerID, employeeid,requireddate ,shippeddate from orders where shippeddate > requireddate;
+
+#
+select concat(firstname,' ', lastname) as fullname from employees;
+
+#
+select orderid,freight, freight*1.1 as freighttotal from orders where freight*1.1 >= 500;
+
+#
+select productid , sum(quantity)  from `order details` where productid=3;
