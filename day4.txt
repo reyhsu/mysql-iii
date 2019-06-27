@@ -1,0 +1,686 @@
+# 列出是否建立index
+show indexes from employees;
+ 
+# where join
+select e.employeeid, e.firstname, e.lastname, o.orderid, o.orderdate
+    -> from employees e, orders o
+    -> where e.employeeid = o.employeeid
+    -> order by e.employeeid
+    -> limit 20;
++------------+-----------+----------+---------+---------------------+
+| employeeid | firstname | lastname | orderid | orderdate           |
++------------+-----------+----------+---------+---------------------+
+|          1 | Nancy     | Davolio  |   10618 | 1997-08-01 00:00:00 |
+|          1 | Nancy     | Davolio  |   10746 | 1997-11-19 00:00:00 |
+|          1 | Nancy     | Davolio  |   10842 | 1998-01-20 00:00:00 |
+|          1 | Nancy     | Davolio  |   10314 | 1996-09-25 00:00:00 |
+|          1 | Nancy     | Davolio  |   10394 | 1996-12-25 00:00:00 |
+|          1 | Nancy     | Davolio  |   10465 | 1997-03-05 00:00:00 |
+|          1 | Nancy     | Davolio  |   10689 | 1997-10-01 00:00:00 |
+|          1 | Nancy     | Davolio  |   10785 | 1997-12-18 00:00:00 |
+|          1 | Nancy     | Davolio  |   10385 | 1996-12-17 00:00:00 |
+|          1 | Nancy     | Davolio  |   10401 | 1997-01-01 00:00:00 |
+|          1 | Nancy     | Davolio  |   11064 | 1998-05-01 00:00:00 |
+|          1 | Nancy     | Davolio  |   10616 | 1997-07-31 00:00:00 |
+|          1 | Nancy     | Davolio  |   10664 | 1997-09-10 00:00:00 |
+|          1 | Nancy     | Davolio  |   10680 | 1997-09-24 00:00:00 |
+|          1 | Nancy     | Davolio  |   10776 | 1997-12-15 00:00:00 |
+|          1 | Nancy     | Davolio  |   10792 | 1997-12-23 00:00:00 |
+|          1 | Nancy     | Davolio  |   10888 | 1998-02-16 00:00:00 |
+|          1 | Nancy     | Davolio  |   10952 | 1998-03-16 00:00:00 |
+|          1 | Nancy     | Davolio  |   10376 | 1996-12-09 00:00:00 |
+|          1 | Nancy     | Davolio  |   10968 | 1998-03-23 00:00:00 |
++------------+-----------+----------+---------+---------------------+
+20 rows in set (0.016 sec)
+
+# 找出員工編號4號的總銷售額
+select sum(unitprice*quantity) from `order details`
+    -> where orderid in (select orderid from orders where employeeid = 4);
++-------------------------+
+| sum(unitprice*quantity) |
++-------------------------+
+|             250187.4500 |
++-------------------------+
+1 row in set (0.030 sec)
+
+# 找出所有員工的總銷售額，按照業績排序
+select e.employeeid, o.orderid, sum(od.unitprice*od.quantity) as total
+    -> from orders o join `order details` od on (o.orderid = od.orderid)
+    -> join employees e on (o.employeeid = e.employeeid)
+    -> group by o.employeeid
+    -> order by total desc;
++------------+---------+-------------+
+| employeeid | orderid | total       |
++------------+---------+-------------+
+|          4 |   10250 | 250187.4500 |
+|          3 |   10251 | 213051.3000 |
+|          1 |   10258 | 202143.7100 |
+|          2 |   10265 | 177749.2600 |
+|          7 |   10289 | 141295.9900 |
+|          8 |   10262 | 133301.0300 |
+|          9 |   10255 |  82964.0000 |
+|          6 |   10249 |  78198.1000 |
+|          5 |   10248 |  75567.7500 |
++------------+---------+-------------+
+9 rows in set (0.117 sec)
+
+# 同上題，使用using 的方式
+select e.employeeid, o.orderid, sum(od.unitprice*od.quantity) as total
+from orders o join `order details` od using (orderid)
+join employees e using (employeeid)
+group by o.employeeid
+order by total desc;
+
+# 兩種建立index的語句
+create table tb1 (id int primary key, f1 varchar(10), f2 varchar(10));
+Query OK, 0 rows affected (0.029 sec)
+
+create table tb2 (id int, f1 varchar(10), f2 varchar(10), primary key (id));
+Query OK, 0 rows affected (0.028 sec)
+
+#
+show indexes from tb1\G
+*************************** 1. row ***************************
+        Table: tb1
+   Non_unique: 0
+     Key_name: PRIMARY
+ Seq_in_index: 1
+  Column_name: id
+    Collation: A
+  Cardinality: 0
+     Sub_part: NULL
+       Packed: NULL
+         Null:
+   Index_type: BTREE
+      Comment:
+Index_comment:
+1 row in set (0.000 sec)
+
+
+
+# 補上table的index
+ alter table tb3 add primary key(id);
+
+
+# 拿掉primary key
+alter table tb3 drop primary key;
+
+# 外鍵FK，對應到另一張資料表的key，將tb4的tb1id參照至tb1的id欄位當作外鍵使用
+create table tb4 (id int , tb1id int , f1 varchar(10), primary key(id), foreign key(tb1id) references tb1(id));
+Query OK, 0 rows affected (0.032 sec)
+
+#  show indexes from tb4\G
+*************************** 1. row ***************************
+        Table: tb4
+   Non_unique: 0
+     Key_name: PRIMARY
+ Seq_in_index: 1
+  Column_name: id
+    Collation: A
+  Cardinality: 0
+     Sub_part: NULL
+       Packed: NULL
+         Null:
+   Index_type: BTREE
+      Comment:
+Index_comment:
+*************************** 2. row ***************************
+        Table: tb4
+   Non_unique: 1
+     Key_name: tb1id
+ Seq_in_index: 1
+  Column_name: tb1id
+    Collation: A
+  Cardinality: 0
+     Sub_part: NULL
+       Packed: NULL
+         Null: YES
+   Index_type: BTREE
+      Comment:
+Index_comment:
+2 rows in set (0.000 sec)
+
+
+# 外鍵參照(tb1id)必須存在才能update
+ update tb4 set tb1id=4 where id=11;
+ 
+# 建立唯一鍵unique key
+create table tb5 (id int, f1 varchar(10), f2 varchar(10), f3 varchar(10), index (f1, f2), unique key(f3));
+
+desc tb5;
++-------+-------------+------+-----+---------+-------+
+| Field | Type        | Null | Key | Default | Extra |
++-------+-------------+------+-----+---------+-------+
+| id    | int(11)     | YES  |     | NULL    |       |
+| f1    | varchar(10) | YES  | MUL | NULL    |       |
+| f2    | varchar(10) | YES  |     | NULL    |       |
+| f3    | varchar(10) | YES  | UNI | NULL    |       |
++-------+-------------+------+-----+---------+-------+
+4 rows in set (0.023 sec)
+
+
+# inner join，資料連不到select不會列出
+ select t3.f1, t3.f2 ,t1.f1, t1.f2 from tb3 t3
+    -> join tb1 t1 on (t3.f1 = t1.f1);
++------+--------+------+------+
+| f1   | f2     | f1   | f2   |
++------+--------+------+------+
+| A    | 123    | A    | AA   |
+| A    | 321    | A    | AA   |
+| B    | 456    | B    | BB   |
+| C    | 123456 | C    | CC   |
++------+--------+------+------+
+
+
+# left join
+select t3.f1, t3.f2 ,t1.f1, t1.f2 from tb3 t3
+    -> left join tb1 t1 on (t3.f1 = t1.f1);
++------+--------+------+------+
+| f1   | f2     | f1   | f2   |
++------+--------+------+------+
+| A    | 123    | A    | AA   |
+| A    | 321    | A    | AA   |
+| B    | 456    | B    | BB   |
+| C    | 123456 | C    | CC   |
+| D    | 456321 | NULL | NULL |
++------+--------+------+------+
+5 rows in set (0.001 sec)
+
+
+# where 句法的join等同於inner join
+select t3.f1, t3.f2, t1.f1, t1.f2 from tb3 t3, tb1 t1 where t3.f1=t1.f1;
+
+# union 欄位數相同就能合
+select * from tb3 union select * from tb4;
++----+------+--------+
+| id | f1   | f2     |
++----+------+--------+
+|  1 | A    | 123    |
+|  2 | A    | 321    |
+|  3 | B    | 456    |
+|  4 | C    | 123456 |
+|  3 | D    | 456321 |
+| 11 | 1    | aaa    |
+| 22 | 1    | bbb    |
+| 33 | 2    | ccc    |
+| 44 | 3    | ddd    |
++----+------+--------+
+
+# 欄位數量不同報錯誤訊息
+MariaDB [db1]> select tb3.f1, tb3.f2 from tb3 union select * from tb4;
+ERROR 1222 (21000): The used SELECT statements have a different number of columns
+MariaDB [db1]> select tb3.f1, tb3.f2 ,tb3.id from tb3 union select * from tb4;
++------+--------+------+
+| f1   | f2     | id   |
++------+--------+------+
+| A    | 123    | 1    |
+| A    | 321    | 2    |
+| B    | 456    | 3    |
+| C    | 123456 | 4    |
+| D    | 456321 | 3    |
+| 11   | 1      | aaa  |
+| 22   | 1      | bbb  |
+| 33   | 2      | ccc  |
+| 44   | 3      | ddd  |
++------+--------+------+
+9 rows in set (0.001 sec)
+
+# 建立view
+create view female as select * from students where csex='F';
+desc female;
++-----------+------------------------------+------+-----+---------+-------+
+| Field     | Type                         | Null | Key | Default | Extra |
++-----------+------------------------------+------+-----+---------+-------+
+| cID       | tinyint(2) unsigned zerofill | NO   |     | 00      |       |
+| cName     | varchar(20)                  | NO   |     | NULL    |       |
+| cSex      | enum('F','M')                | NO   |     | F       |       |
+| cBirthday | date                         | NO   |     | NULL    |       |
+| cEmail    | varchar(100)                 | YES  |     | NULL    |       |
+| cPhone    | varchar(50)                  | YES  |     | NULL    |       |
+| cAddr     | varchar(255)                 | YES  |     | NULL    |       |
++-----------+------------------------------+------+-----+---------+-------+
+7 rows in set (0.016 sec)
+
+# 建立一個成績表，外鍵對應的屬性要與參照的相同ex: tinyint(2) unsigned zerofill
+create table scores  ( cid tinyint(2) unsigned zerofill  , term int ,ch int, eng int, math int,  foreign key(cid) references students(cid));
+Query OK, 0 rows affected (0.031 sec)
+
+# 塞成績資料 EX:
+insert into scores values ( 01 , 1, floor(rand()*61+40),floor(rand()*61+40),floor(rand()*61+40));
+
+# 查出每學期的平均成績
+ select std.cid, std.cname, sc.term, sc.ch, sc.eng, sc.math, (sc.ch+sc.eng+sc.math)/3 from students std join  scores sc using (cid);
++-----+--------+------+------+------+------+--------------------------+
+| cid | cname  | term | ch   | eng  | math | (sc.ch+sc.eng+sc.math)/3 |
++-----+--------+------+------+------+------+--------------------------+
+|  01 | 簡奉君 |    1 |   76 |   53 |   59 |                  62.6667 |
+|  01 | 簡奉君 |    2 |   86 |   78 |   90 |                  84.6667 |
+|  01 | 簡奉君 |    3 |   57 |   97 |   92 |                  82.0000 |
+|  01 | 簡奉君 |    4 |   66 |   77 |   86 |                  76.3333 |
+|  05 | 黎楚寧 |    1 |   40 |   83 |   74 |                  65.6667 |
+|  05 | 黎楚寧 |    2 |   83 |   91 |   45 |                  73.0000 |
+|  05 | 黎楚寧 |    3 |   97 |   67 |   62 |                  75.3333 |
+|  05 | 黎楚寧 |    4 |   73 |   76 |   63 |                  70.6667 |
+|  07 | 徐佳螢 |    1 |   94 |   78 |   70 |                  80.6667 |
+|  07 | 徐佳螢 |    2 |   74 |   60 |   99 |                  77.6667 |
+|  07 | 徐佳螢 |    3 |   94 |   73 |   44 |                  70.3333 |
+|  07 | 徐佳螢 |    4 |   84 |   64 |   90 |                  79.3333 |
++-----+--------+------+------+------+------+--------------------------+
+
+# 
+ create or replace view myscore as select std.cid, std.cname, std.cemail, sc.term, sc.ch, sc.eng, sc.math, (sc.ch+sc.eng+sc.math)/3 from students std join  scores sc using (cid);
+ 
+#
+ show create view;
+ 
+# create or replace view可自定義欄位名稱(a,b,c)
+ create or replace view myscore
+    -> (id , name, email, term, ch, eng, math, avg) as
+    ->  select std.cid, std.cname, std.cemail, sc.term, sc.ch, sc.eng, sc.math, (sc.ch+sc.eng+sc.math)/3 as avg
+ 	->  from students std join  scores sc using (cid);
+	
+# 
+ select * from myscore;
++----+--------+---------------------+------+------+------+------+---------+
+| id | name   | email               | term | ch   | eng  | math | avg     |
++----+--------+---------------------+------+------+------+------+---------+
+| 01 | 簡奉君 | elven@superstar.com |    1 |   76 |   53 |   59 | 62.6667 |
+| 01 | 簡奉君 | elven@superstar.com |    2 |   86 |   78 |   90 | 84.6667 |
+| 01 | 簡奉君 | elven@superstar.com |    3 |   57 |   97 |   92 | 82.0000 |
+| 01 | 簡奉君 | elven@superstar.com |    4 |   66 |   77 |   86 | 76.3333 |
+| 05 | 黎楚寧 | ivy@superstar.com   |    1 |   40 |   83 |   74 | 65.6667 |
+| 05 | 黎楚寧 | ivy@superstar.com   |    2 |   83 |   91 |   45 | 73.0000 |
+| 05 | 黎楚寧 | ivy@superstar.com   |    3 |   97 |   67 |   62 | 75.3333 |
+| 05 | 黎楚寧 | ivy@superstar.com   |    4 |   73 |   76 |   63 | 70.6667 |
+| 07 | 徐佳螢 | lala@superstar.com  |    1 |   94 |   78 |   70 | 80.6667 |
+| 07 | 徐佳螢 | lala@superstar.com  |    2 |   74 |   60 |   99 | 77.6667 |
+| 07 | 徐佳螢 | lala@superstar.com  |    3 |   94 |   73 |   44 | 70.3333 |
+| 07 | 徐佳螢 | lala@superstar.com  |    4 |   84 |   64 |   90 | 79.3333 |
++----+--------+---------------------+------+------+------+------+---------+
+
+# Prepared Statements
+# 設定變數
+set @var1 = 123, @var2 = 'A', @var3 = 100;
+
+select @var1,@var2,@var3;
++-------+-------+-------+
+| @var1 | @var2 | @var3 |
++-------+-------+-------+
+|   123 | A     |   100 |
++-------+-------+-------+
+
+# := 
+select @var5 := 12345;
+
+# select使用變數
+set @myid =1;
+select * from students where cid = @myid;
+
+# 
+select @max := max(score), @min := min(score) from scores;
+
+# 
+MariaDB [class]> select avg(ch) from myscore;
++---------+
+| avg(ch) |
++---------+
+| 77.0000 |
++---------+
+1 row in set (0.001 sec)
+
+MariaDB [class]> select @avg_ch := avg(ch) from myscore;
++--------------------+
+| @avg_ch := avg(ch) |
++--------------------+
+|       77.000000000 |
++--------------------+
+1 row in set (0.001 sec)
+
+
+# Prepared Statement
+
+prepare inputscore from
+    -> 'insert into scores values (?,?,?,?,?)';
+Query OK, 0 rows affected (0.001 sec)
+Statement prepared
+
+set @id=7 , @term='3' , @ch = 70 , @eng = 80 , @math = 90;
+Query OK, 0 rows affected (0.000 sec)
+
+execute inputscore using @id, @term, @ch, @eng, @math;
+
+ select * from myscore;
++----+--------+-----------------------+------+------+------+------+---------+
+| id | name   | email                 | term | ch   | eng  | math | avg     |
++----+--------+-----------------------+------+------+------+------+---------+
+| 01 | 簡奉君 | elven@superstar.com   |    1 |   76 |   53 |   59 | 62.6667 |
+| 01 | 簡奉君 | elven@superstar.com   |    2 |   86 |   78 |   90 | 84.6667 |
+| 01 | 簡奉君 | elven@superstar.com   |    3 |   57 |   97 |   92 | 82.0000 |
+| 01 | 簡奉君 | elven@superstar.com   |    4 |   66 |   77 |   86 | 76.3333 |
+| 05 | 黎楚寧 | ivy@superstar.com     |    1 |   40 |   83 |   74 | 65.6667 |
+| 05 | 黎楚寧 | ivy@superstar.com     |    2 |   83 |   91 |   45 | 73.0000 |
+| 05 | 黎楚寧 | ivy@superstar.com     |    3 |   97 |   67 |   62 | 75.3333 |
+| 05 | 黎楚寧 | ivy@superstar.com     |    4 |   73 |   76 |   63 | 70.6667 |
+| 07 | 徐佳螢 | lala@superstar.com    |    1 |   13 |   78 |   70 | 53.6667 |
+| 07 | 徐佳螢 | lala@superstar.com    |    2 |   74 |   60 |   99 | 77.6667 |
+| 07 | 徐佳螢 | lala@superstar.com    |    3 |   94 |   73 |   44 | 70.3333 |
+| 07 | 徐佳螢 | lala@superstar.com    |    4 |   84 |   64 |   90 | 79.3333 |
+| 08 | 林雨媗 | crystal@superstar.com |    2 |  100 |   90 |   80 | 90.0000 |
+| 07 | 徐佳螢 | lala@superstar.com    |    3 |   70 |   80 |   90 | 80.0000 |
++----+--------+-----------------------+------+------+------+------+---------+
+14 rows in set (0.001 sec)
+
+# procedure的使用
+delimiter ##
+create procedure shownopass () 
+begin
+select * from myscore where avg < 70;
+select * from myscore where avg > 70;
+end ##
+delimiter ;
+call  shownopass();
+
+# 建立一個function
+delimiter ##
+create function f1(x int, y int)
+returns int
+begin
+return x + y;
+end ##
+
+# 使用自定義的function
+select f1(10,3);
++----------+
+| f1(10,3) |
++----------+
+|       13 |
++----------+
+1 row in set (0.000 sec)
+
+# 建立另一個function
+create function f2( x int , y int)
+returns int
+begin
+set @ret = 2 * x + y;
+return @ret;
+end ##
+
+使用:
+ select f2(3,4);
++---------+
+| f2(3,4) |
++---------+
+|      10 |
++---------+
+1 row in set (0.001 sec)
+
+
+# 樂透
+create function f3() 
+returns int
+begin
+return floor(rand()*49+1);
+end ##
+
+select f3()##
+
+### function有return，procedure沒有
+# 
+delimiter ##
+create procedure p1 ( IN x int , OUT y int , INOUT z int )
+begin
+select x, y, z;
+set x = 100, y = 200, z = 300;
+end ##
+
+set @v1=1, @v2=2, @v3=3;
+
+select @v1, @v2, @v3;
++------+------+------+
+| @v1  | @v2  | @v3  |
++------+------+------+
+|    1 |    2 |    3 |
++------+------+------+
+1 row in set (0.000 sec)
+
+call p1(@v1, @v2, @v3);
++------+------+------+
+| x    | y    | z    |
++------+------+------+
+|    1 | NULL |    3 |
++------+------+------+
+1 row in set (0.000 sec)
+
+
+# 定義三個參數 IN s , OUT pass, OUT down，使用 procedure
+delimiter ##
+create procedure p2 ( IN s int, OUT pass int, OUT down int)
+begin
+select count(*) into pass from students where myscore >= s;
+select count(*) into down from students where myscore < s;
+end ##
+
+call p2(60 ,@pass, @down );
+select @pass;
+select @down;
+
+
+# 
+delimiter ##
+create procedure p4 (in id int, out counter int , out sum int )
+begin
+select count(*) into counter from orders where employeeid = id; 
+select sum(unitprice*quantity) into sum from `order details`
+where orderid in (
+select orderid from orders	
+where employeeid = id);
+end ##
+
+delimiter ;
+call p4 ( 1, @c, @s);
+select 2, @c, @s;
+
+#
+delimiter ##
+create procedure c1 (in cid tinyint, in term int, in ch int, in eng int , in math int, out sum int) 
+begin
+insert into scores values (cid , term , ch, eng, math);
+set sum = ch + eng + math;
+end ##
+
+delimiter ;
+call c1 (2, '1',100,99,98,@sum);
+select * from scores;
++------+------+------+------+------+
+| cid  | term | ch   | eng  | math |
++------+------+------+------+------+
+|   01 |    1 |   76 |   53 |   59 |
+|   01 |    2 |   86 |   78 |   90 |
+|   01 |    3 |   57 |   97 |   92 |
+|   01 |    4 |   66 |   77 |   86 |
+|   05 |    1 |   40 |   83 |   74 |
+|   05 |    2 |   83 |   91 |   45 |
+|   05 |    3 |   97 |   67 |   62 |
+|   05 |    4 |   73 |   76 |   63 |
+|   07 |    1 |   13 |   78 |   70 |
+|   07 |    2 |   74 |   60 |   99 |
+|   07 |    3 |   94 |   73 |   44 |
+|   07 |    4 |   84 |   64 |   90 |
+|   08 |    2 |  100 |   90 |   80 |
+|   07 |    3 |   70 |   80 |   90 |
+|   02 |    1 |  100 |   99 |   98 | <=== call c1寫入
++------+------+------+------+------+
+15 rows in set (0.001 sec)
+
+select @sum;
++------+
+| @sum |
++------+
+|  297 |
++------+
+
+# function內的程式運算
+delimiter ##
+create function f5() returns int
+begin 
+declare v1 int;
+declare v2, v3 int;
+declare v4, v5 int default 1;
+set v1 = 100, v2 = 200;
+set v3 = v1 + v2 + v4 + v5;
+return v3;
+end ##
+
+delimiter ;
+
+select f5();
++------+
+| f5() |
++------+
+|  302 |
++------+
+1 row in set (0.001 sec)
+
+
+# 計算northwind庫內"人"的數量
+delimiter ##
+create function f6() returns int
+begin
+declare ec, sc, cc, total int default 0;
+select count(*) into ec from employees;
+select count(*) into sc from suppliers;
+select count(*) into cc from customers;
+set total = ec + sc + cc;
+return total;
+end ##
+
+delimiter ;
+select f6(); 
+
+
+#  v2的變數不可跳出begin ... end，讓v1用
+delimiter ##
+create function f7() returns int
+begin
+declare v1 int default 100;
+begin
+declare v2 int;
+set v2 = 200;
+end;
+set v1 = v2;
+return v1;
+end; ##
+
+select f7();
+    -> ##
+ERROR 1054 (42S22): Unknown column 'v2' in 'field list'
+
+
+# if procedure
+create procedure p5 (in score int)
+begin 
+if score >= 60 then
+select 'pass';
+end if ;
+end; ##
+
+call p5(99)##
++------+
+| pass |
++------+
+| pass |
++------+
+
+call p5(55)##
+Query OK, 0 rows affected (0.000 sec)
+
+
+# if ... else 
+create procedure p6 (in score int)
+begin
+if score >= 60 then
+select 'pass';
+else 
+select 'down';
+end if ;
+end; ##
+
+ call p6(55)##
++------+
+| down |
++------+
+| down |
++------+
+1 row in set (0.001 sec)
+
+call p6(77)##
++------+
+| pass |
++------+
+| pass |
++------+
+1 row in set (0.000 sec)
+
+
+### IF 格式:
+if ... then
+elseif ... then
+else
+end if 
+
+# 成績判斷 if，procedure
+delimiter ##
+create procedure p7(in score int)
+begin
+if score >= 90 then
+select 'A';
+elseif score > 80 then
+select 'B';
+elseif score > 70 then
+select 'C';
+else
+select 'D';
+end if;
+end; ##
+
+delimiter ;
+call p7(99);
++---+
+| A |
++---+
+| A |
++---+
+1 row in set (0.001 sec)
+
+Query OK, 0 rows affected (0.005 sec)
+
+MariaDB [northwind]>
+MariaDB [northwind]> call p7(89);
++---+
+| B |
++---+
+| B |
++---+
+1 row in set (0.000 sec)
+
+Query OK, 0 rows affected (0.005 sec)
+
+MariaDB [northwind]> call p7(79);
++---+
+| C |
++---+
+| C |
++---+
+1 row in set (0.000 sec)
+
+Query OK, 0 rows affected (0.004 sec)
+
+MariaDB [northwind]> call p7(69);
++---+
+| D |
++---+
+| D |
++---+
+1 row in set (0.000 sec)
+
+Query OK, 0 rows affected (0.005 sec)
