@@ -1,0 +1,37 @@
+0. 每個辦公室的業績狀況表 
+1. 業務業績排行榜, procedure
+2. 熱銷商品排行榜, procedure
+3. 業務訂單取消的比例 orders.sttaus = canceled
+4. 低於商品建議售價95% MSRP的訂單及其實際售價
+5. 當訂單資料被修改及刪除的時候記錄在 log 資料表中, 時間及所有資料欄位
+
+employ order orderdetail office
+排行榜, procedure 時間區間 , status = shipped
+排行榜, procedure 時間區間 
+
+
+
+
+0.
+select e.employeeNumber , of.officecode , sum(od.priceeach*od.quantityordered) as total
+from employees e join offices of on (e.officecode = of.officecode)
+join customers c on (of.city = c.city)
+join orders o on (o.customernumber = c.customernumber)
+join orderdetails od on (o.ordernumber = od.ordernumber)
+group by officecode;
+
+3.
+select count(status),c.customernumber, o.ordernumber, o.status from orders o
+join customers c on ( c.customerNumber = o.customerNumber)
+where  status <> 'Shipped'
+group by c.salesrepemployeenumber;
+
+
+5. 
+create table mylog like orders;
+alter table `mylog` ADD `etime` DATETIME AFTER `customerNumber`;
+CREATE TRIGGER `t1` AFTER UPDATE ON `orders`
+BEGIN
+INSERT INTO mylog (orderNumber,orderDate,requiredDate,shippedDate,status,comments,customerNumber,etime) VALUES (orderNumber,orderDate,requiredDate,shippedDate,status,comments,customerNumber,etime,now());
+END
+

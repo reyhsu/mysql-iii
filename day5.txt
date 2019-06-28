@@ -181,3 +181,81 @@ select * from students where caddr regexp '^$';
 
 # . 表示任意字元
 select * from students where caddr regexp '^...$';
+
+# 創帳號
+create user alen@'%' identified by '123123';
+show grants for alen@localhost;
+show grants for root@localhost;
+# 給權限 on 庫.表 
+grant all on class.* to alen@'%';
+flush privileges;
+
+# 匯出檔案，fields terminated by ',' 可匯出csv檔
+
+select * into outfile 'C:/Users/Public/Downloads/out.txt' from students;
+select * into outfile 'C:/Users/Public/Downloads/out2.txt' fields terminated by ',' from students;
+select * into outfile 'C:/Users/Public/Downloads/out3.csv' fields terminated by ',' enclosed by '"' from students;
+
+# 建一個空的table，匯入資料表
+create table news like students;
+load data infile 'C:/Users/Public/Downloads/out.txt' into table news;
+
+# mysql shell utility, JSON Import Utility 
+
+
+# .sql檔匯入mysql
+mysql -u root < C:\Users\Public\Downloads\mysqlsampledatabase.sql
+
+# 建立全文搜索, 搜索名稱 on 表(欄位,欄位)
+create fulltext index fsearch on productlines(textdescription);
+
+show indexes from productlines\G
+*************************** 1. row ***************************
+        Table: productlines
+   Non_unique: 0
+     Key_name: PRIMARY
+ Seq_in_index: 1
+  Column_name: productLine
+    Collation: A
+  Cardinality: 7
+     Sub_part: NULL
+       Packed: NULL
+         Null:
+   Index_type: BTREE
+      Comment:
+Index_comment:
+*************************** 2. row ***************************
+        Table: productlines
+   Non_unique: 1
+     Key_name: fsearch
+ Seq_in_index: 1
+  Column_name: textDescription
+    Collation: NULL
+  Cardinality: NULL
+     Sub_part: NULL
+       Packed: NULL
+         Null: YES
+   Index_type: FULLTEXT
+      Comment:
+Index_comment:
+2 rows in set (0.000 sec)
+
+# 搜尋關鍵字 against('automobiles');
+select productline from productlines where match(textdescription) against('automobiles');
++--------------+
+| productline  |
++--------------+
+| Vintage Cars |
++--------------+
+1 row in set (0.001 sec)
+
+
+# 多個關鍵字against('automobiles,trains');
+select productline from productlines where match(textdescription) against('automobiles,trains');
++--------------+
+| productline  |
++--------------+
+| Trains       |
+| Vintage Cars |
++--------------+
+2 rows in set (0.001 sec)
