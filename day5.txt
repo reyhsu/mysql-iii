@@ -1,0 +1,126 @@
+## function 用在取得return的值，procedure 用在做要做的事
+
+# 判斷兩數大小 procedure
+BEGIN
+CASE 
+WHEN x > y THEN 
+SELECT 'bigger';
+when x < y THEN
+SELECT 'small';
+ELSE
+SELECT 'equal';
+end case;
+end
+
+# 判斷輸入的值，回傳特定字串 function
+BEGIN
+DECLARE result varchar(10) DEFAULT '';
+CASE x 
+WHEN 1 then set result = 'A';
+WHEN 10 then set result = 'B';
+WHEN 100 then set result = 'C';
+else set result = 'not much';
+end CASE;
+RETURN result;
+end
+
+
+# 輸入月份，回傳天數
+BEGIN
+DECLARE result varchar(10) DEFAULT '';
+CASE
+when x in (1,3,5,7,8,10,12) then set result = '31';
+when x in (4,6,,9,11) then set result = '30';
+when x = 2 then set result ='28';
+ELSE set result = 'not much';
+END CASE;
+return result;
+end
+
+# i=i+1, procedure
+BEGIN
+DECLARE i int DEFAULT 0;
+WHILE i < 10 DO
+SELECT i;
+set i=i +1;
+end WHILE;
+END
+
+# until: 不成立 => 重作，直到成立 => 跳出，repeat function
+CREATE FUNCTION `f7`(`x` INT) RETURNS INT NOT DETERMINISTIC NO SQL SQL SECURITY DEFINER BEGIN declare i, sum int default 0; repeat set i=i+1; set sum = sum + i; until i >= x end repeat; return sum; END
+
+BEGIN
+declare i, sum int default 0;
+ repeat
+  set i=i+1;
+  set sum = sum + i;
+  until i >= x
+ end repeat;
+ return sum
+END
+
+# 無窮迴圈 procedure ，重複print 123直到i大於7跳出，label:可自定義名稱
+CREATE DEFINER=`root`@`localhost` PROCEDURE `p4`() NOT DETERMINISTIC NO SQL SQL SECURITY DEFINER BEGIN DECLARE i int DEFAULT 0; label: LOOP IF i < 7 THEN SELECT '123'; ELSE LEAVE label; END IF; set i = i + 1; END LOOP label; SELECT i ; END
+
+BEGIN
+	DECLARE i int DEFAULT 0;
+	label: LOOP
+    	IF i < 7 THEN
+    		SELECT '123';
+            ELSE
+            	LEAVE label;
+        END IF;
+        set i = i + 1;
+    END LOOP label;
+    SELECT i ;
+END
+
+# iterate 迭代
+
+BEGIN
+	DECLARE i int DEFAULT 0;
+	label: LOOP
+    	IF i < 7 THEN
+    		SELECT '123';
+		elseif i > 10 then
+			LEAVE label;
+        ELSE
+			select 'restart';
+			set i = 100;
+			iterate label;
+        END IF;
+        set i = i + 1;
+    END LOOP label;
+    SELECT i ;
+END
+
+# 使用EXIT, CONTINUE... 判斷SQLSTATE，接著輸出訊息
+# FOR 之後可以接 SQLWARNING, SQLEXCEPTION 等...
+BEGIN
+DECLARE EXIT HANDLER FOR SQLSTATE '23000'
+	BEGIN
+    	SELECT '23000 code output';        
+    END;
+INSERT INTO students (cid,cname,csex,cbirthday) VALUES
+(id, cname, sex, birthday);
+SELECT 'input ok';
+END
+
+# OPEN, CLOSE
+
+BEGIN
+	DECLARE i INT;
+    DECLARE vexit INT DEFAULT 0;
+    DECLARE id INT DEFAULT 0;
+    DECLARE name varchar(10) DEFAULT '';
+    
+	DECLARE curs CURSOR FOR
+    	SELECT cid,cname FROM students;
+    OPEN curs;
+    
+    FETCH curs INTO id, name;
+    CLOSE curs;
+    
+    SELECT concat(id,":",name);
+
+END
