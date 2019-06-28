@@ -112,15 +112,72 @@ BEGIN
 	DECLARE i INT;
     DECLARE vexit INT DEFAULT 0;
     DECLARE id INT DEFAULT 0;
-    DECLARE name varchar(10) DEFAULT '';
-    
+    DECLARE name varchar(10) DEFAULT '';    
 	DECLARE curs CURSOR FOR
     	SELECT cid,cname FROM students;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET vexit = 1;
     OPEN curs;
-    
-    FETCH curs INTO id, name;
+    label:LOOP
+    	FETCH curs INTO id, name;
+        IF vexit =1 THEN
+        	LEAVE label;
+        END IF;
+        SELECT concat(id,":",name);
+    END LOOP label;
     CLOSE curs;
-    
-    SELECT concat(id,":",name);
-
 END
+
+
+
+BEGIN
+	DECLARE i INT;
+    DECLARE vexit INT DEFAULT 0;
+    DECLARE id INT DEFAULT 0;
+    DECLARE name varchar(10) DEFAULT '';
+    DECLARE newstatus varchar(10) DEFAULT '';
+	DECLARE curs CURSOR FOR
+    	SELECT cid,cname FROM students;
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET vexit = 1;
+    OPEN curs;
+    label:LOOP
+    	FETCH curs INTO id, scores;
+        IF vexit =1 THEN
+        	LEAVE label;
+        END IF;
+        IF score >= 60 THEN
+        	set newstatus = 'pass';
+        ELSE
+        	set newstatus = 'fail';
+        END IF;
+        UPDATE students SET status = newstatus WHERE cid = id;
+    END LOOP label;
+    CLOSE curs;
+END
+
+# trigger 的建立
+CREATE TRIGGER `t1` AFTER UPDATE ON `students`
+ FOR EACH ROW BEGIN
+	INSERT INTO log (time,msg) VALUES (now(),"update");
+END
+
+
+# lock table 鎖定表單
+lock tables students read;
+lock tables students read write;
+unlock tables;
+
+# transaction, 0 off, 1 on
+set autocommit = 0;
+start transaction;
+rollback;
+commit;
+
+# 正規表示法
+select * from students where caddr regexp '^建國';
+select * from students where caddr regexp '樓$';
+select * from students where caddr regexp '^建國';
+# 空字串
+select * from students where caddr regexp '^$';
+
+# . 表示任意字元
+select * from students where caddr regexp '^...$';
