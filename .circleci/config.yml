@@ -18,7 +18,7 @@ jobs:
            command: ls -al *
        - run:
            name: Deploy Over SSH
-           command: ssh -i .circleci/config.yml ec2-user@18.183.117.67 "sh ~/deploy.sh"
+           command: ssh -i .circleci/ilearning_UAT.pem ec2-user@18.183.117.67 "sh ~/deploy.sh"
  
 workflows:
   version: 2.1
